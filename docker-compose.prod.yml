@@ -8,6 +8,8 @@ services:
       - staticfiles:/app/staticfiles
     env_file:
       - .env.prod
+    networks:
+      - shared-network
     healthcheck:
       test:
         [
@@ -26,6 +28,8 @@ services:
     command: ["celery"]
     env_file:
       - .env.prod
+    networks:
+      - shared-network
 
 networks:
   shared-network:
