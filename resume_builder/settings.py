@@ -48,6 +48,9 @@ OPENAI_API_KEY = env.str("OPENAI_API_KEY", "fake-key-123")
 # Domains (www.example.com)
 BACKEND_DOMAIN = env.str("BACKEND_DOMAIN", "localhost")  # api.ats-resume-builder.com
 FRONTEND_DOMAIN = env.str("FRONTEND_DOMAIN", "localhost")  # www.ats-resume-builder.com
+# Parent domain for cookies shared across api + www (e.g. .ats-resume-builder.com)
+# Leave unset for localhost
+SHARED_DOMAIN = env.str("SHARED_DOMAIN", default="")
 
 # origins (https://www.example.com)
 BACKEND_ORIGIN = env.str(
@@ -63,15 +66,16 @@ FRONTEND_ORIGIN = env.str(
 # ---------------------------------------------------------------------------
 
 ALLOWED_HOSTS = [BACKEND_DOMAIN, "localhost", "127.0.0.1"]
-# CORS
+### CORS
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_ORIGIN,
     BACKEND_ORIGIN,
 ]  # backend needs https://api.ats-resume-builder.com for admin/Swagger
 CORS_ALLOW_CREDENTIALS = True
-# CSRF - must include BACKEND_ORIGIN for same-origin requests (Swagger, admin)
+### CSRF - must include BACKEND_ORIGIN for same-origin requests (Swagger, admin)
 CSRF_TRUSTED_ORIGINS = [FRONTEND_ORIGIN, BACKEND_ORIGIN]
-CSRF_COOKIE_DOMAIN = FRONTEND_DOMAIN
+CSRF_COOKIE_DOMAIN = SHARED_DOMAIN or None
+SESSION_COOKIE_DOMAIN = SHARED_DOMAIN or None
 
 
 # ---------------------------------------------------------------------------
