@@ -46,10 +46,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Requires repo secrets: SSH_PRIVATE_KEY, DEPLOY_HOST, DEPLOY_USER
+  # Uses environment "IONOS VM DEPLOYMENT" with secrets: SSH_PRIVATE_KEY, DEPLOY_HOST, DEPLOY_USER
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
+    environment:
+      name: IONOS VM DEPLOYMENT
+      url: https://api.ats-resume-builder.com/api/docs/
     steps:
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1.0.3
@@ -60,3 +63,17 @@ jobs:
           script: |
             cd /opt/resume-builder
             docker compose -f docker-compose.prod.yml up -d --pull always
+
+      - name: Health Check
+        run: |
+          echo "Waiting for deployment to become ready..."
+          for i in $(seq 1 12); do
+            if curl -sf "https://api.ats-resume-builder.com/health-check/" > /dev/null; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Attempt $i/12 failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 12 attempts"
+          exit 1
