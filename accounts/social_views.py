@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 
 class GoogleLoginView(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
-    callback_url = f"{settings.FRONTEND_ORIGINS[0]}/account/login/google-callback"
+    callback_url = f"{settings.FRONTEND_ORIGIN}/account/login/google-callback"
     client_class = OAuth2Client
     permission_classes = [AllowAny]
     authentication_classes = []

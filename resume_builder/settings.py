@@ -42,35 +42,37 @@ DEBUG = env.bool("DEBUG", default=True)
 OPENAI_API_KEY = env.str("OPENAI_API_KEY", "fake-key-123")
 
 # ---------------------------------------------------------------------------
-# Domains
+# Domains + Origins
 # ---------------------------------------------------------------------------
 
-# Backend hostname only (no scheme), e.g. "api.ats-resume-builder.com"
-BACKEND_DOMAIN = env.str("BACKEND_DOMAIN", "localhost")
+# Domains (www.example.com)
+BACKEND_DOMAIN = env.str("BACKEND_DOMAIN", "localhost")  # api.ats-resume-builder.com
+FRONTEND_DOMAIN = env.str("FRONTEND_DOMAIN", "localhost")  # www.ats-resume-builder.com
 
-# Comma-separated list of allowed frontend origins, e.g.:
-# "https://www.ats-resume-builder.com,https://ats-resume-builder.com"
-FRONTEND_ORIGINS = env.list("FRONTEND_ORIGINS", default=["http://localhost:3000"])
-# Used by Adaptor email links (verify-email, password reset). Defaults to first origin.
-FRONTEND_DOMAIN = env.str(
-    "FRONTEND_DOMAIN",
-    default=FRONTEND_ORIGINS[0] if FRONTEND_ORIGINS else "http://localhost:3000",
-)
+# origins (https://www.example.com)
+BACKEND_ORIGIN = env.str(
+    "BACKEND_ORIGIN", "http://localhost:8000"
+)  # https://api.ats-resume-builder.com
+FRONTEND_ORIGIN = env.str(
+    "FRONTEND_ORIGIN", "http://localhost:3000"
+)  # https://www.ats-resume-builder.com
+
 
 # ---------------------------------------------------------------------------
 # Hosts / CORS / CSRF
 # ---------------------------------------------------------------------------
 
-ALLOWED_HOSTS = env.list(
-    "ALLOWED_HOSTS",
-    default=["0.0.0.0", "localhost", "127.0.0.1"],
-)
-
-CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+ALLOWED_HOSTS = [BACKEND_DOMAIN, "localhost", "127.0.0.1"]
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_ORIGIN,
+    BACKEND_ORIGIN,
+]  # backend needs https://api.ats-resume-builder.com for admin/Swagger
 CORS_ALLOW_CREDENTIALS = True
+# CSRF - must include BACKEND_ORIGIN for same-origin requests (Swagger, admin)
+CSRF_TRUSTED_ORIGINS = [FRONTEND_ORIGIN, BACKEND_ORIGIN]
+CSRF_COOKIE_DOMAIN = FRONTEND_DOMAIN
 
-CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
-CSRF_COOKIE_DOMAIN = env.str("CSRF_COOKIE_DOMAIN", "localhost")
 
 # ---------------------------------------------------------------------------
 # Installed apps
