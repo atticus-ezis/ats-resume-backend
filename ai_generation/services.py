@@ -1,7 +1,9 @@
+import logging
 from datetime import datetime
 
 import markdown
 from django.template.loader import render_to_string
+from openai import APIError
 from weasyprint import HTML
 
 from ai_generation.constants import (
@@ -11,6 +13,8 @@ from ai_generation.models import DocumentVersion
 from applicant_profile.models import UserContext
 from job_profile.models import JobDescription
 from resume_builder.settings import OPENAI_API_KEY
+
+logger = logging.getLogger(__name__)
 
 
 def api_call(client, role_description, prompt):
@@ -26,8 +30,8 @@ def api_call(client, role_description, prompt):
             max_tokens=4000,
         )
         return response.choices[0].message.content
-    except Exception as e:
-        print(e)
+    except APIError as e:
+        logger.error("OpenAI API error: %s", e)
         return None
 
 

@@ -65,16 +65,13 @@ class CustomLogoutView(LogoutView):
         refresh_token = request.COOKIES.get(refresh_cookie_name)
 
         if refresh_token:
-            # Add refresh token to request data for blacklisting
-            # We need to modify request.data which is normally immutable
-            if hasattr(request, "_full_data"):
-                # Request data has already been accessed
-                request._full_data["refresh"] = refresh_token
+            # Access request.data to trigger parsing, then inject the refresh
+            # token into the mutable backing store for token blacklisting.
+            data = request.data
+            if isinstance(data, dict):
+                data["refresh"] = refresh_token
             else:
-                # Initialize request data with the refresh token
-                _ = request.data  # Access data to trigger parsing
-                if hasattr(request, "_full_data"):
-                    request._full_data["refresh"] = refresh_token
+                request._full_data = {"refresh": refresh_token}
 
         return super().post(request, *args, **kwargs)
 

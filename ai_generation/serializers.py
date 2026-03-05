@@ -2,7 +2,13 @@ from django.db import IntegrityError
 from rest_framework import serializers
 
 from ai_generation.constants import COMMAND_CHOICES
-from ai_generation.models import Document, DocumentVersion
+from ai_generation.models import (
+    CONSTRAINT_UNIQUE_TYPE,
+    CONSTRAINT_UNIQUE_VERSION_MARKDOWN,
+    CONSTRAINT_UNIQUE_VERSION_NAME,
+    Document,
+    DocumentVersion,
+)
 from applicant_profile.models import UserContext
 from job_profile.models import JobDescription
 
@@ -25,7 +31,9 @@ class UpdateContentSerializer(serializers.Serializer):
         source="document_version",
         required=True,
     )
-    instructions = serializers.CharField(required=False, allow_null=True)
+    instructions = serializers.CharField(
+        required=False, allow_null=True, max_length=5000
+    )
 
     def validate(self, val):
         if not val.get("instructions"):
@@ -152,15 +160,15 @@ class DocumentListSerializer(serializers.ModelSerializer):
 
 def handle_integrity_error(exc):
     msg = str(exc)
-    if "unique_name_per_document" in msg:
+    if CONSTRAINT_UNIQUE_VERSION_NAME in msg:
         raise serializers.ValidationError(
             "A version with this name already exists for this document"
         )
-    if "unique_markdown_per_document" in msg:
+    if CONSTRAINT_UNIQUE_VERSION_MARKDOWN in msg:
         raise serializers.ValidationError(
             "A version with this markdown already exists for this document"
         )
-    if "unique_document_type_per_user_context_and_job_description" in msg:
+    if CONSTRAINT_UNIQUE_TYPE in msg:
         raise serializers.ValidationError(
             "A document with this type already exists for this user, job description and personal info"
         )
