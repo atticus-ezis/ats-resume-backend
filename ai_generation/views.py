@@ -1,5 +1,4 @@
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
@@ -129,14 +128,11 @@ class DocumentVersionViewSet(viewsets.ModelViewSet):
         queryset = DocumentVersion.objects.filter(
             document__user=self.request.user
         ).select_related("document")
-        # document_id = self.request.query_params.get("document")
-        # if document_id:
-        #     queryset = queryset.filter(document_id=document_id)
         return queryset
 
     @action(detail=True, methods=["get"], name="pdf_download", url_path="pdf")
     def pdf_download(self, request, pk=None):
-        document_version = get_object_or_404(DocumentVersion, id=pk)
+        document_version = self.get_object()
         markdown = document_version.markdown
         file_name = document_version.version_name
 

@@ -7,6 +7,10 @@ class JobDescriptionSerializer(serializers.ModelSerializer):
     def validate_job_context(self, value):
         if not isinstance(value, dict):
             raise serializers.ValidationError("job_context must be a JSON object")
+        import json
+
+        if len(json.dumps(value)) > 50000:
+            raise serializers.ValidationError("job_context is too large (max 50KB)")
         needed_fields = [
             "job_position",
             "company_name",

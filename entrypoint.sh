@@ -8,6 +8,8 @@ if [ "$1" = "web" ]; then
     python manage.py migrate
     echo "Running system checks..."
     python manage.py check 
+    echo "Running tests..."
+    pytest 
     echo "Collecting static files..."
     python manage.py collectstatic --noinput
     echo "Creating superuser..."

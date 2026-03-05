@@ -91,28 +91,3 @@ class TestUserRegistration:
         assert (
             response.status_code == 200
         ), f"expected 200 but got {response.status_code} with response: {response.data}"
-
-    # def test_confirm_password_reset(self, confirm_password_reset_url):
-    #     user = UserFactory()
-    #     uid, token = generate_uid_and_token(user)
-    #     response = APIClient().post(
-    #         confirm_password_reset_url,
-    #         {
-    #             "uid": uid,
-    #             "token": token,
-    #             "new_password1": "new_password",
-    #             "new_password2": "new_password",
-    #         },
-    #     )
-    #     assert response.status_code == 200, (
-    #         f"expected 200 but got {response.status_code}"
-    #     )
-    #     assert response.data["detail"] == "Password has been reset.", (
-    #         f"This response isn't expected: {response.data['detail']}"
-    #     )
-    #     assert response.data["logged_in"] is True, "loggin status not updated"
-
-    #     assert response.cookies.get("access_token") is not None, "missing access token"
-    #     assert response.cookies.get("refresh_token") is not None, (
-    #         "missing refresh token"
-    #     )

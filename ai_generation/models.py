@@ -1,11 +1,14 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from applicant_profile.models import UserContext
 from job_profile.models import JobDescription
 from resume_builder.utils import compute_context_hash
 
-# Create your models here.
+CONSTRAINT_UNIQUE_TYPE = "unique_document_type_per_user_context_and_job_description"
+CONSTRAINT_UNIQUE_VERSION_NAME = "unique_name_per_document"
+CONSTRAINT_UNIQUE_VERSION_MARKDOWN = "unique_markdown_per_document"
 
 
 class Document(models.Model):
@@ -20,13 +23,21 @@ class Document(models.Model):
         max_length=255, choices=[("resume", "Resume"), ("cover_letter", "Cover Letter")]
     )
     final_version = models.ForeignKey(
-        "DocumentVersion",  # forward reference
+        "DocumentVersion",
         on_delete=models.SET_NULL,
         related_name="final_version",
         null=True,
         blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.final_version_id and self.final_version.document_id != self.pk:
+            raise ValidationError("final_version must belong to this document")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.job_description.company_name} - {self.document_type}"
@@ -35,7 +46,7 @@ class Document(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "user_context", "job_description", "document_type"],
-                name="unique_document_type_per_user_context_and_job_description",
+                name=CONSTRAINT_UNIQUE_TYPE,
             )
         ]
 
@@ -68,10 +79,10 @@ class DocumentVersion(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["document", "version_name"],
-                name="unique_name_per_document",
+                name=CONSTRAINT_UNIQUE_VERSION_NAME,
             ),
             models.UniqueConstraint(
                 fields=["document", "context_hash"],
-                name="unique_markdown_per_document",
+                name=CONSTRAINT_UNIQUE_VERSION_MARKDOWN,
             ),
         ]

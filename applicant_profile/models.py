@@ -4,6 +4,9 @@ import json
 from django.contrib.auth.models import User
 from django.db import models
 
+CONSTRAINT_UNIQUE_CONTEXT = "unique_context_per_user"
+CONSTRAINT_UNIQUE_NAME = "unique_name_per_user"
+
 
 def compute_context_hash(value):
     """Return SHA256 hex digest for context value (string or JSON-serializable)."""
@@ -19,7 +22,7 @@ class UserContext(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="resumes")
     name = models.CharField(max_length=255)
     context = models.JSONField()
-    context_hash = models.CharField(max_length=64, db_index=True, blank=True, null=True)
+    context_hash = models.CharField(max_length=64, db_index=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,10 +38,10 @@ class UserContext(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "context_hash"],
-                name="unique_context_per_user",
+                name=CONSTRAINT_UNIQUE_CONTEXT,
             ),
             models.UniqueConstraint(
                 fields=["user", "name"],
-                name="unique_name_per_user",
+                name=CONSTRAINT_UNIQUE_NAME,
             ),
         ]

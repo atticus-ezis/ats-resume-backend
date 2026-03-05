@@ -35,10 +35,8 @@ if local_env.exists():
 # Core
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = env.str(
-    "SECRET_KEY", "django-insecure-r1&!0o!v%&y1-2h0*$e%&46(jcxr3k7vdzu7k2yxf^um0e=^8a"
-)
-DEBUG = env.bool("DEBUG", default=True)
+SECRET_KEY = env.str("SECRET_KEY")
+DEBUG = env.bool("DEBUG", default=False)
 OPENAI_API_KEY = env.str("OPENAI_API_KEY", "fake-key-123")
 
 # ---------------------------------------------------------------------------
@@ -144,7 +142,7 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE_USE_CSRF": True,
     "JWT_AUTH_HTTPONLY": True,
-    "JWT_AUTH_SAMESITE": env.str("JWT_AUTH_SAMESITE", "None"),
+    "JWT_AUTH_SAMESITE": env.str("JWT_AUTH_SAMESITE", "Lax"),
     "JWT_AUTH_SECURE": not DEBUG,
     "JWT_AUTH_COOKIE": "access_token",
     "JWT_AUTH_REFRESH_COOKIE": "refresh_token",
@@ -320,6 +318,26 @@ LOGGING = {
             "handlers": ["console"],
             "level": "ERROR",
             "propagate": True,
+        },
+        "accounts": {
+            "handlers": ["console"],
+            "level": "INFO" if DEBUG else "WARNING",
+            "propagate": False,
+        },
+        "ai_generation": {
+            "handlers": ["console"],
+            "level": "INFO" if DEBUG else "WARNING",
+            "propagate": False,
+        },
+        "applicant_profile": {
+            "handlers": ["console"],
+            "level": "INFO" if DEBUG else "WARNING",
+            "propagate": False,
+        },
+        "job_profile": {
+            "handlers": ["console"],
+            "level": "INFO" if DEBUG else "WARNING",
+            "propagate": False,
         },
     },
 }

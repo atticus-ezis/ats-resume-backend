@@ -45,8 +45,6 @@ from accounts.social_views import GoogleLoginView
 from accounts.views import (
     CSRFExemptLoginView,
     CustomLogoutView,
-    # CustomPasswordResetConfirmView,
-    # CustomRegisterView,
     CustomVerifyEmailView,
     UserProfileView,
 )
@@ -78,7 +76,8 @@ def validate_user(request):
             status=status.HTTP_200_OK, data={"email": user.email, "id": user.pk}
         )
     return Response(
-        status=status.HTTP_401_UNAUTHORIZED, data={"detail": "use is not authenticated"}
+        status=status.HTTP_401_UNAUTHORIZED,
+        data={"detail": "user is not authenticated"},
     )
 
 

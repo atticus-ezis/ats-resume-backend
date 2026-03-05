@@ -3,13 +3,13 @@ from rest_framework import serializers
 
 from resume_builder.utils import compute_context_hash
 
-from .models import UserContext
+from .models import CONSTRAINT_UNIQUE_CONTEXT, CONSTRAINT_UNIQUE_NAME, UserContext
 
 
 def _integrity_error_to_validation_error(exc, validated_data, user):
     """Convert DB IntegrityError to ValidationError with a clear message."""
     message = str(exc)
-    if "unique_name_per_user" in message:
+    if CONSTRAINT_UNIQUE_NAME in message:
         name = validated_data.get("name")
         detail = (
             f"You already have a context with this name: {name}."
@@ -17,7 +17,7 @@ def _integrity_error_to_validation_error(exc, validated_data, user):
             else "You already have a context with this name."
         )
         raise serializers.ValidationError(detail)
-    if "unique_context_per_user" in message:
+    if CONSTRAINT_UNIQUE_CONTEXT in message:
         context_hash = (
             compute_context_hash(validated_data.get("context"))
             if validated_data.get("context") is not None
