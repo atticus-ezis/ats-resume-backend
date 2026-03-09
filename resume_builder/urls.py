@@ -85,7 +85,13 @@ def health_check(request):
     return HttpResponse("ok", status=200)
 
 
+def trigger_error(request):
+    """Sentry test: raises an error so Sentry can capture it."""
+    raise ValueError("Sentry test: trigger_error view")
+
+
 urlpatterns = [
+    path("trigger-error/", trigger_error, name="trigger_error"),
     path("admin/", admin.site.urls),
     path("health-check/", health_check, name="health_check"),
     # path("applicant/", include("applicant_profile.urls")),
