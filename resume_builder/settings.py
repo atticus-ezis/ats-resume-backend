@@ -9,6 +9,7 @@ from pathlib import Path
 
 import dj_database_url
 import environ
+from django.core.management.utils import get_random_secret_key
 
 # Set library path for WeasyPrint on macOS
 if sys.platform == "darwin":
@@ -35,7 +36,7 @@ if local_env.exists():
 # Core
 # ---------------------------------------------------------------------------
 
-SECRET_KEY = env.str("SECRET_KEY")
+SECRET_KEY = env.str("SECRET_KEY", default=get_random_secret_key())
 DEBUG = env.bool("DEBUG", default=False)
 OPENAI_API_KEY = env.str("OPENAI_API_KEY", "fake-key-123")
 
