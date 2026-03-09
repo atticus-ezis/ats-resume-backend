@@ -9,6 +9,7 @@ from pathlib import Path
 
 import dj_database_url
 import environ
+import sentry_sdk
 from django.core.management.utils import get_random_secret_key
 
 # Set library path for WeasyPrint on macOS
@@ -303,6 +304,25 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Sentry
+# ---------------------------------------------------------------------------
+
+SENTRY_DSN = env.str("SENTRY_DSN", default="")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        traces_sample_rate=0.1 if not DEBUG else 1.0,
+        profiles_sample_rate=0.1 if not DEBUG else 1.0,
+        environment="development" if DEBUG else "production",
+    )
 
 # ---------------------------------------------------------------------------
 # Logging

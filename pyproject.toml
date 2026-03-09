@@ -27,6 +27,7 @@ dependencies = [
     "pytest-django>=4.11.1",
     "ruff>=0.15.0",
     "weasyprint>=67.0",
+    "sentry-sdk[celery,django]>=2.22.0",
     "whitenoise>=6.6.0",
 ]
 
