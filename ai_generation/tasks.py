@@ -2,6 +2,7 @@ import logging
 
 from celery import shared_task
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 from ai_generation.constants import COMMAND_TO_DOCUMENT_TYPES
 from ai_generation.models import Document, DocumentVersion
@@ -13,14 +14,30 @@ from resume_builder.utils import compute_context_hash
 
 logger = logging.getLogger(__name__)
 
+STALE_TASK_MESSAGE = (
+    "This request is no longer valid (e.g. the page was refreshed or the app was updated). "
+    "Please try again."
+)
+
 
 @shared_task
 def generate_resume_and_cover_letter(
     user_context_id, job_description_id, command, regenerate_version, user_id
 ):
-    user = User.objects.get(pk=user_id)
-    user_context = UserContext.objects.get(pk=user_context_id, user=user)
-    job_description = JobDescription.objects.get(pk=job_description_id, user=user)
+    try:
+        user = User.objects.get(pk=user_id)
+        user_context = UserContext.objects.get(pk=user_context_id, user=user)
+        job_description = JobDescription.objects.get(pk=job_description_id, user=user)
+    except ObjectDoesNotExist as e:
+        logger.warning(
+            "generate_resume_and_cover_letter: referenced object missing (stale task or post-deploy). "
+            "user_id=%s user_context_id=%s job_description_id=%s error=%s",
+            user_id,
+            user_context_id,
+            job_description_id,
+            e,
+        )
+        raise ValueError(STALE_TASK_MESSAGE) from e
     commands = COMMAND_TO_DOCUMENT_TYPES[command]
 
     response_data = []
@@ -77,7 +94,16 @@ def generate_resume_and_cover_letter(
 
 @shared_task
 def update_content(document_version_id, instructions):
-    document_version = DocumentVersion.objects.get(pk=document_version_id)
+    try:
+        document_version = DocumentVersion.objects.get(pk=document_version_id)
+    except DocumentVersion.DoesNotExist as e:
+        logger.warning(
+            "update_content: DocumentVersion missing (stale task or post-deploy). "
+            "document_version_id=%s error=%s",
+            document_version_id,
+            e,
+        )
+        raise ValueError(STALE_TASK_MESSAGE) from e
     try:
         markdown_response = UpdateContent(instructions, document_version).execute()
     except Exception:
